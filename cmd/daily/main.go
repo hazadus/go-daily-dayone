@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -20,11 +21,15 @@ func main() {
 	var start = "2024-12-29"
 	var end = "2024-12-29"
 
-	startDate, err := time.Parse("2006-01-02", start)
+	startFlag := flag.String("start", start, "Start date as YYYY-MM-DD")
+	endFlag := flag.String("end", end, "End date as YYYY-MM-DD")
+	flag.Parse()
+
+	startDate, err := time.Parse("2006-01-02", *startFlag)
 	if err != nil {
 		panic("Incorrect start date")
 	}
-	endDate, err := time.Parse("2006-01-02", end)
+	endDate, err := time.Parse("2006-01-02", *endFlag)
 	if err != nil {
 		panic("Incorrect end date")
 	}
