@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -80,7 +81,7 @@ func readNotes(path string, startDate, endDate time.Time) ([]*DailyNote, error) 
 
 		dailyNotes = append(dailyNotes, &DailyNote{
 			Date:    d,
-			Content: dailyInfo,
+			Content: clear(dailyInfo),
 		})
 	}
 
@@ -124,4 +125,14 @@ func createDayOneNote(note *DailyNote) error {
 	}
 
 	return nil
+}
+
+// clear удаляет из заметки нежелательные строки.
+func clear(content string) string {
+	res := strings.Replace(content, "📚 **Книга**: –", "", 1)
+	res = strings.Replace(res, "🎮 **Игра**: –", "", 1)
+	res = strings.Replace(res, "🎥 **Сериал**: –", "", 1)
+	res = strings.Replace(res, "🏒 **Спорт**: –", "", 1)
+	res = strings.Replace(res, "🍿 **Фильм**: –", "", 1)
+	return res
 }
