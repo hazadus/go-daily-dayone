@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"time"
@@ -15,8 +16,8 @@ type DailyNote struct {
 
 func main() {
 	var dailyPath = "/Users/hazadus/Library/Mobile Documents/iCloud~md~obsidian/Documents/Hazadus Vault/Daily/"
-	var start = "2024-05-13"
-	var end = "2024-05-20"
+	var start = "2024-12-29"
+	var end = "2024-12-29"
 
 	startDate, err := time.Parse("2006-01-02", start)
 	if err != nil {
@@ -39,9 +40,16 @@ func main() {
 
 	for _, note := range dailyNotes {
 		fmt.Printf("Date: %s\n%s\n\n", note.Date, note.Content)
+		err := createDayOneNote(note)
+		if err != nil {
+			fmt.Printf("failed to create dayone note: %s\n", err)
+			os.Exit(1)
+		}
 	}
 }
 
+// readNotes читает ежедневные заметки из файлов за указанные интервал дат,
+// и сохраняет их в массиве.
 func readNotes(path string, startDate, endDate time.Time) ([]*DailyNote, error) {
 	fmt.Printf("Daily notes path: %s\nDates: %s - %s\n",
 		path, startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
@@ -79,11 +87,41 @@ func readNotes(path string, startDate, endDate time.Time) ([]*DailyNote, error) 
 	return dailyNotes, nil
 }
 
+// getDailyInfo достаёт нужную информацию из ежедневной заметки.
 func getDailyInfo(note []byte) (string, error) {
-	re, err := regexp.Compile(`(?s)## События дня(.*?)----(?s)`)
+	re, err := regexp.Compile(`(?s)## События дня(.*?)----\n# План на сегодня(.*?)----(?s)`)
 	if err != nil {
 		return "", fmt.Errorf("error compiling regexp: %w", err)
 	}
 	res := re.Find(note)
 	return string(res), nil
+}
+
+// createDayOneNote вызывает dayone2 CLI для создания заметки в DayOne.
+func createDayOneNote(note *DailyNote) error {
+	weekdays := map[string]string{
+		"Monday":    "Понедельник",
+		"Tuesday":   "Вторник",
+		"Wednesday": "Среда",
+		"Thursday":  "Четверг",
+		"Friday":    "Пятница",
+		"Saturday":  "Суббота",
+		"Sunday":    "Воскресенье",
+	}
+
+	//nolint:all
+	dayOneCmd := exec.Command(
+		"dayone2",
+		"-j",
+		"Журнал",
+		fmt.Sprintf("--date=%s 21:00:00", note.Date.Format("2006-01-02")),
+		"new",
+		weekdays[note.Date.Weekday().String()]+"\n",
+		note.Content,
+	)
+	if output, err := dayOneCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("error running dayone2: %w, %s", err, string(output))
+	}
+
+	return nil
 }
