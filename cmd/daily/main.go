@@ -134,10 +134,11 @@ func createDayOneNote(note *DailyNote) error {
 
 // clear удаляет из заметки нежелательные строки.
 func clear(content string) string {
-	res := strings.Replace(content, "📚 **Книга**: –", "", 1)
-	res = strings.Replace(res, "🎮 **Игра**: –", "", 1)
-	res = strings.Replace(res, "🎥 **Сериал**: –", "", 1)
-	res = strings.Replace(res, "🏒 **Спорт**: –", "", 1)
-	res = strings.Replace(res, "🍿 **Фильм**: –", "", 1)
+	res := strings.Replace(content, "📚 **Книга**: –\n", "", 1)
+	res = strings.Replace(res, "🎮 **Игра**: –\n", "", 1)
+	res = strings.Replace(res, "🎥 **Сериал**: –\n", "", 1)
+	res = strings.Replace(res, "🏒 **Спорт**: –\n", "", 1)
+	res = strings.Replace(res, "🍿 **Фильм**: –\n", "", 1)
+	res = strings.Replace(res, "# План на сегодня", "## Завершенные дела", 1)
 	return res
 }
